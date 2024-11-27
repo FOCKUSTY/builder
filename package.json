@@ -12,27 +12,28 @@
     "copier"
   ],
   "devDependencies": {
-		"@types/node": "^22.7.4",
-		"nodemon": "^3.1.7",
-		"prettier": "^3.3.3",
-		"ts-node": "^10.9.2",
-		"tsconfig-paths": "^4.2.0",
-		"typescript": "^5.6.2"
-	},
+    "@types/node": "^22.7.4",
+    "nodemon": "^3.1.7",
+    "prettier": "^3.3.3",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.6.2"
+  },
   "dependencies": {
+    "f-formatter": "^0.3.1",
     "node": "^22.9.0"
   },
   "author": "FOCKUSTY",
-	"license": "MIT",
-	"engines": {
-		"node": ">=7.6.0"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/FOCKUSTY/logger"
-	},
-	"bugs": {
-		"email": "wwddwwwd@mail.ru",
-		"url": "https://github.com/FOCKUSTY/logger/issues"
-	}
+  "license": "MIT",
+  "engines": {
+    "node": ">=7.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FOCKUSTY/logger"
+  },
+  "bugs": {
+    "email": "wwddwwwd@mail.ru",
+    "url": "https://github.com/FOCKUSTY/logger/issues"
+  }
 }

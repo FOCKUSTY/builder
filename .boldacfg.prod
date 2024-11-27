@@ -1,0 +1,19 @@
+{
+    "fsource": [
+        "README.md",
+        "LICENSE",
+        ".gitignore",
+        ".prettierrc",
+        "package.json"
+    ],
+    "fbuild": [
+        "README.md",
+        "LICENSE",
+        ".gitignore",
+        ".prettierrc",
+        "package.json"
+    ],
+    
+    "source": "./",
+    "build": "../build"
+}

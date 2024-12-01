@@ -7,6 +7,7 @@
     "dev:config": "nodemon ./configurator.ts",
     "build:tsc": "tsc",
     "build:builder": "ts-node ./builder.ts",
+    "publish": "cd ../dist && npm publish",
     "build": "npm run build:tsc && npm run build:builder"
   },
   "keywords": [

@@ -15,5 +15,5 @@
     ],
     
     "source": "./",
-    "build": "../build"
+    "build": "../dist/"
 }

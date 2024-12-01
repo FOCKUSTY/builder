@@ -4,6 +4,7 @@ import fs from "fs";
 
 import type { Config, SettingKeys, Settings } from "./config.types";
 
+const regexp = /\.boldacfg\.([a-z]+)/;
 const settings: Config = {
 	fsource: [],
 	fbuild: [],
@@ -105,17 +106,39 @@ class Configurator {
 	}
 
 	private ValidatePath() {
-		const names = [".boldacfg", ".boldacfg.prod", ".boldacfg.dev"];
+		const names = [
+			".boldacfg.dev",
+			".boldacfg.prod",
+			".boldacfg"
+		];
+		
+		const filteted: string[] = [];
+		const files = fs.readdirSync(this._dir).filter(name =>
+			name.match(regexp));
 
-		for (const name of names) {
-			const file = path.join(this._dir, name);
+		for (const name of files) {
+			const matched = name.match(regexp);
 
-			if (!fs.existsSync(file)) continue;
-			else return file;
-		}
+			if (!matched) continue;
+			if (matched.input !== matched[0]) continue;
+			if (name.includes(".example")) continue;
 
-		return path.join(this._dir, names[0]);
-	}
+			filteted.push(name);
+		};
+
+		for (const ffile of filteted) {
+			if (names.includes(ffile)) {
+				const file = path.join(this._dir, ffile);
+				
+				if (!fs.existsSync(file)) continue;
+				else return file;
+			} else if (regexp.test(ffile)) {
+				return path.join(this._dir, ffile);
+			};
+		};
+
+		return path.join(this._dir, ".boldacfg");
+	};
 
 	private Create() {
 		try {
@@ -125,8 +148,8 @@ class Configurator {
 			return settings;
 		} catch (err: any) {
 			throw new Error(err);
-		}
-	}
+		};
+	};
 
 	private Validator(key: SettingKeys, value: Settings): Settings {
 		return new Validator(
@@ -139,15 +162,18 @@ class Configurator {
 			),
 			this._path
 		).init();
-	}
+	};
 
 	private Validate(config: Config) {
+		if (config.fbuild.length < config.fsource.length)
+			throw new Error("build files must be more or equal than source");
+
 		for (const key in settings) {
 			const value = this.Validator(key as SettingKeys, config[key]);
 
 			this._config[key] = value;
-		}
-	}
+		};
+	};
 
 	private Read() {
 		if (!fs.existsSync(this._path) && this._create_file) this.Create();
@@ -175,8 +201,8 @@ class Configurator {
 			if (!fs.existsSync(this._path)) return;
 
 			throw new Error(err);
-		}
-	}
+		};
+	};
 
 	private readonly init = () => {
 		this.Read();

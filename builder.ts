@@ -10,13 +10,8 @@ class Builder {
 
     private readonly CreateDir = () => {
         if (!fs.existsSync(this._build)) {
-            console.log("Создание папки...");
-
             fs.mkdirSync(this._build);
-            console.log("Папка создана!");
         } else {
-            console.log("Удаление файлов...");
-
             const files = fs.readdirSync(this._build)
 
             for(const index in files) {
@@ -26,8 +21,6 @@ class Builder {
                 
                 fs.unlinkSync(join(this._build, file));
             };
-
-            console.log("Файлы почищены!");
         };
     };
 
@@ -35,20 +28,10 @@ class Builder {
         if (!fs.existsSync(filePath))
             return;
 
-        const parsed = parse(filePath);
-        const file = parsed.name + parsed.ext;
-
-        console.log(`Файл "${file}"...`);
-        console.log(`Проверка файла...`);
-
         if (fs.existsSync(buildPath))
             fs.unlinkSync(buildPath);
 
-        console.log(`Копирование файла...`);
-
         fs.copyFileSync(filePath, buildPath);
-
-        console.log(file + " скопирован !");
     };
 
     private readonly CopyFiles = (files: string[]) => {

@@ -8,7 +8,8 @@
     "build:tsc": "tsc",
     "build:builder": "ts-node ./builder.ts",
     "publish": "cd ../dist && npm publish",
-    "build": "npm run build:tsc && npm run build:builder"
+    "build": "npm run build:tsc && npm run build:builder",
+    "build:publish": "npm run build && npm run publish"
   },
   "keywords": [
     "libs",

@@ -216,8 +216,4 @@ class Configurator {
 	}
 }
 
-(() => {
-	new Configurator(false);
-})();
-
 export default Configurator;

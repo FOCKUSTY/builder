@@ -50,8 +50,4 @@ class Builder {
     };
 }
 
-(() => {
-    new Builder().execute();
-})();
-
 export default Builder;

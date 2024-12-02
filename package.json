@@ -1,15 +1,13 @@
 {
   "name": "fock-builder",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "simple builder for you library or project",
   "main": "index.ts",
   "scripts": {
     "dev:config": "nodemon ./configurator.ts",
     "build:tsc": "tsc",
     "build:builder": "ts-node ./builder.ts",
-    "publish": "cd ../dist && npm publish",
-    "build": "npm run build:tsc && npm run build:builder",
-    "build:publish": "npm run build && npm run publish"
+    "build": "npm run build:tsc && npm run build:builder"
   },
   "keywords": [
     "libs",

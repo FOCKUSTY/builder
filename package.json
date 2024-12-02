@@ -32,10 +32,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/FOCKUSTY/logger"
+    "url": "https://github.com/FOCKUSTY/builder"
   },
   "bugs": {
     "email": "wwddwwwd@mail.ru",
-    "url": "https://github.com/FOCKUSTY/logger/issues"
+    "url": "https://github.com/FOCKUSTY/builder/issues"
   }
 }

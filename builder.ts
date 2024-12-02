@@ -1,6 +1,6 @@
 import Configurator from "./configurator";
 
-import { join, parse } from 'path';
+import { join } from 'path';
 import fs from 'fs';
 
 const { config } = new Configurator();

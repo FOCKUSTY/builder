@@ -1,6 +1,6 @@
 {
   "name": "fock-builder",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "simple builder for you library or project",
   "main": "index.ts",
   "scripts": {
@@ -25,7 +25,6 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
-    "f-formatter": "^0.3.1",
     "node": "^22.9.0"
   },
   "author": "FOCKUSTY",

@@ -1,4 +1,3 @@
-import Formatter, { Colors } from "f-formatter";
 import path from "path";
 import fs from "fs";
 
@@ -184,9 +183,9 @@ class Configurator {
 				.length === 0
 		) {
 			console.log(
-				Colors.brightYellow +
+				"\u001B[33;1m" +
 					"Your config is empty, returning to default" +
-					Colors.reset
+					"\u001B[0m"
 			);
 
 			fs.unlinkSync(this._path);
@@ -194,9 +193,13 @@ class Configurator {
 		}
 
 		try {
-			const config: Config = new Formatter().FromJSONWithPath(this._path);
-
-			this.Validate(config);
+			let file: any;
+			const json = fs.readFileSync(path.join(this._path), { encoding: "utf-8" });
+			JSON.stringify(json, (_, value) => {
+				eval(`file = ${value}`);
+			});
+	
+			this.Validate(file);
 		} catch (err: any) {
 			if (!fs.existsSync(this._path)) return;
 

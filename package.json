@@ -1,6 +1,6 @@
 {
   "name": "fock-builder",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "simple builder for you library or project",
   "main": "index.ts",
   "scripts": {
@@ -24,6 +24,9 @@
   },
   "dependencies": {
     "node": "^22.9.0"
+  },
+  "bin": {
+    "fockbuilder": "./bin/index.js"
   },
   "author": "FOCKUSTY",
   "license": "MIT",

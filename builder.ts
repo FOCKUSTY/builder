@@ -1,6 +1,6 @@
 import Configurator from "./configurator";
 
-import { join } from 'path';
+import { join, parse } from 'path';
 import fs from 'fs';
 
 const { config } = new Configurator();
@@ -10,9 +10,13 @@ class Builder {
 
     private readonly CreateDir = () => {
         if (!fs.existsSync(this._build)) {
+            console.log("creating dir...");
+
             fs.mkdirSync(this._build);
         } else {
-            const files = fs.readdirSync(this._build)
+            console.log("cleaning dir...");
+
+            const files = fs.readdirSync(this._build);
 
             for(const index in files) {
                 const file = files[index];
@@ -25,13 +29,21 @@ class Builder {
     };
 
     private readonly CopyFile = (filePath: string, buildPath: string) => {
+        const parsed = parse(filePath);
+        const builded = parse(buildPath);
+
         if (!fs.existsSync(filePath))
             return;
 
-        if (fs.existsSync(buildPath))
+        if (fs.existsSync(buildPath)) {
+            console.log("deleting " + "\u001B[33;1m" + builded.name + builded.ext + "\u001B[0m" + "...");
             fs.unlinkSync(buildPath);
+        }
+
+        console.log("copying " + "\u001B[33;1m" + parsed.name + parsed.ext + "\u001B[0m" + "...");
 
         fs.copyFileSync(filePath, buildPath);
+        console.log("copyied!");
     };
 
     private readonly CopyFiles = (files: string[]) => {

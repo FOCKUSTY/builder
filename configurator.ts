@@ -78,6 +78,8 @@ class Validator {
 	public readonly init = (): Settings => {
 		const { key, value } = { key: this._key, value: this._value };
 
+		console.log("validating " + "\u001B[33;1m" + key + "\u001B[0m" + "...");
+
 		if (!value) return this.PrintValueError(`Value at key: "${key}" is not defined`);
 		if (Array.isArray(value)) return this.ArrayValidator();
 		if (typeof value === "string")
@@ -141,6 +143,8 @@ class Configurator {
 
 	private Create() {
 		try {
+			console.log("config creating...");
+
 			const file = JSON.stringify(settings, undefined, 4);
 			fs.writeFileSync(this._path, file, "utf-8");
 
@@ -169,6 +173,10 @@ class Configurator {
 
 		for (const key in settings) {
 			const value = this.Validator(key as SettingKeys, config[key]);
+
+			if (settings[key]?.toString() === value?.toString())
+				console.log("\u001B[33;1m" + key + "\u001B[0m" + " is passed validation");
+			else console.log("\u001B[33;1m" + key + "\u001B[0m" + " is returned to default");
 
 			this._config[key] = value;
 		};

@@ -1,6 +1,6 @@
 import yargs, { Options as Yargs } from 'yargs';
 
-import path, { join } from 'path';
+import path from 'path';
 import fs from 'fs';
 
 const usage = "\nUsage: fockbuilder --start to build your files";
@@ -51,13 +51,16 @@ class Listener {
     };
 
     private readonly execute = () => {
-        const folderPath = path.join("./", "commands");
+        const folderPath = path.join(__dirname, "commands");
         const folder = fs.readdirSync(folderPath);
 
         if (this.options.length === 0) {
-            const command: Command = new (require(join("./", "commands", "start.ts")).default)();
+            const commandsPath = path.join(__dirname, "commands");
 
-            return command.execute();
+            if (fs.existsSync(path.join(commandsPath, "start.ts")))
+                return (new (require(path.join(__dirname, "commands", "start.ts")).default)()).execute();
+            else
+                return (new (require(path.join(__dirname, "commands", "start.js")).default)()).execute();
         };
 
         for (const fileName of folder) {

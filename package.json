@@ -4,9 +4,9 @@
   "description": "simple builder for you library or project",
   "main": "index.ts",
   "scripts": {
-    "dev:config": "nodemon ./configurator.ts",
+    "dev:config": "set NODE_ENV=config&& nodemon ./start.ts",
     "build:tsc": "tsc",
-    "build:builder": "ts-node ./builder.ts",
+    "build:builder": "set NODE_ENV=build&& ts-node ./start.ts",
     "build": "npm run build:tsc && npm run build:builder"
   },
   "keywords": [

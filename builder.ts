@@ -8,22 +8,22 @@ const { config } = new Configurator();
 class Builder {
     private readonly _build = join(__dirname, config.build);
 
-    private readonly CreateDir = () => {
-        if (!fs.existsSync(this._build)) {
+    private readonly CreateDir = (dirPath: string = this._build) => {
+        if (!fs.existsSync(dirPath)) {
             console.log("creating dir...");
 
-            fs.mkdirSync(this._build);
+            fs.mkdirSync(dirPath);
         } else {
             console.log("cleaning dir...");
 
-            const files = fs.readdirSync(this._build);
+            const files = fs.readdirSync(dirPath);
 
-            for(const index in files) {
+            for (const index in files) {
                 const file = files[index];
 
-                if (!config.fsource.includes(file)) continue;
+                if (!config.fsource.includes(file as any)) continue;
                 
-                fs.unlinkSync(join(this._build, file));
+                fs.unlinkSync(join(dirPath, file));
             };
         };
     };
@@ -46,18 +46,49 @@ class Builder {
         console.log("copyied!");
     };
 
-    private readonly CopyFiles = (files: string[]) => {
+    private readonly CopyFiles = (files: string[]|string[][]) => {
         this.CreateDir();
 
-        for(const index in files) {
-            const filePath = join(config.source, files[index]);
-            const buildPath = join(config.build, config.fbuild[index]);
+        const copy = (file: string, index: number) => {
+            const filePath = join(config.source, file);
+            const buildPath = config.fbuild[index];
 
-            this.CopyFile(filePath, buildPath);
+            console.log("f", filePath);
+            console.log("b", buildPath);
+
+            if (typeof buildPath === "string")
+                this.CopyFile(filePath, join(config.build, buildPath));
+            else this.CopyFile(filePath, join(config.build, ...buildPath));
+        };
+
+        for (const index in files) {
+            const array = files[index];
+
+            if (!Array.isArray(array))
+                copy(array, Number(index));
+            else {
+                copy(join(...array), Number(index));
+            };
+        }
+    };
+
+    private readonly CopyDirs = (dirs: string[] | string[][]) => {
+        for (const dir of dirs) {
+            if (Array.isArray(dir)) {
+                let fullDir: string[] = [];
+
+                for (const d of dir) {
+                    fullDir.push(d);
+                    this.CreateDir(join(this._build, ...fullDir));
+                };
+            }
+            else
+                this.CreateDir(join(this._build, dir));
         };
     };
 
     public execute() {
+        this.CopyDirs(config.dirs);
         this.CopyFiles(config.fsource);
     };
 }

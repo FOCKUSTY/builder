@@ -5,6 +5,8 @@ import type { Config, SettingKeys, Settings } from "./config.types";
 
 const regexp = /\.boldacfg\.([a-z]+)/;
 const settings: Config = {
+	dirs: [],
+
 	fsource: [],
 	fbuild: [],
 
@@ -64,11 +66,15 @@ class Validator {
 				: this.PrintValueError(`Your value at key "${key}" not that type`);
 
 		for (const p of value) {
-			const parse = path.parse(p);
-
-			if (typeof p !== "string")
+			if (typeof p !== "string" && !Array.isArray(p))
 				return this.PrintValueError(`At your key: "${key}" a ${p} not that type`);
-			if (!(parse.dir === "") || !(parse.root === ""))
+
+			let parse: path.ParsedPath;
+
+			if (typeof p === "string") parse = path.parse(p);
+			else parse = path.parse(path.join(...p));
+
+			if ((!(parse.dir === "") || !(parse.root === "")) && !Array.isArray(p))
 				return this.PrintValueError(`At your key: "${key}" a ${p} not file`);
 		}
 
@@ -174,7 +180,7 @@ class Configurator {
 		for (const key in settings) {
 			const value = this.Validator(key as SettingKeys, config[key]);
 
-			if (settings[key]?.toString() === value?.toString())
+			if (settings[key]?.toString() !== value?.toString())
 				console.log("\u001B[33;1m" + key + "\u001B[0m" + " is passed validation");
 			else console.log("\u001B[33;1m" + key + "\u001B[0m" + " is returned to default");
 

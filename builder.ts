@@ -53,9 +53,6 @@ class Builder {
             const filePath = join(config.source, file);
             const buildPath = config.fbuild[index];
 
-            console.log("f", filePath);
-            console.log("b", buildPath);
-
             if (typeof buildPath === "string")
                 this.CopyFile(filePath, join(config.build, buildPath));
             else this.CopyFile(filePath, join(config.build, ...buildPath));

@@ -72,17 +72,17 @@ class Validator {
 				: this.PrintValueError(`Your value at key "${key}" not that type`);
 
 		for (const index in value) {
-			const a = value[index];
+			const array = value[index];
 
-			if (Array.isArray(a)) value[index] = join(...a);
+			if (Array.isArray(array)) value[index] = join(...array);
 
 			const vPath = value[index] as string;
 			const parsed = path.parse(vPath);
 
-			if (typeof vPath !== "string" && !Array.isArray(vPath))
+			if (typeof vPath !== "string" && !Array.isArray(array))
 				return this.PrintValueError(`At your key: "${key}" a ${vPath} not that type`);
 
-			if ((!(parsed.dir === "") || !(parsed.root === "")) && !Array.isArray(vPath))
+			if ((!(parsed.dir === "") || !(parsed.root === "")) && !Array.isArray(array))
 				return this.PrintValueError(`At your key: "${key}" a ${vPath} not file`);
 		}
 

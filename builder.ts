@@ -46,30 +46,20 @@ class Builder {
         console.log("copyied!");
     };
 
-    private readonly CopyFiles = (files: string[]|string[][]) => {
+    private readonly CopyFiles = (files: string[]) => {
         this.CreateDir();
 
-        const copy = (file: string, index: number) => {
+        for (const index in files) {
+            const file = files[index];
+
             const filePath = join(config.source, file);
             const buildPath = config.fbuild[index];
 
-            if (typeof buildPath === "string")
-                this.CopyFile(filePath, join(config.build, buildPath));
-            else this.CopyFile(filePath, join(config.build, ...buildPath));
-        };
-
-        for (const index in files) {
-            const array = files[index];
-
-            if (!Array.isArray(array))
-                copy(array, Number(index));
-            else {
-                copy(join(...array), Number(index));
-            };
+            this.CopyFile(filePath, join(config.build, buildPath));
         }
     };
 
-    private readonly CopyDirs = (dirs: string[] | string[][]) => {
+    private readonly CopyDirs = (dirs: string[]) => {
         for (const dir of dirs) {
             if (Array.isArray(dir)) {
                 let fullDir: string[] = [];

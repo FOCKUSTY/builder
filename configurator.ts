@@ -1,10 +1,15 @@
-import path from "path";
+import path, { join } from "path";
 import fs from "fs";
 
-import type { Config, SettingKeys, Settings } from "./config.types";
+import type {
+	StandartSettings as Settings,
+	SettingKeys,
+	InputSettings,
+	OldConfigType
+} from "./config.types";
 
 const regexp = /\.boldacfg\.([a-z]+)/;
-const settings: Config = {
+const settings: OldConfigType = {
 	dirs: [],
 
 	fsource: [],
@@ -18,12 +23,12 @@ class Validator {
 	private readonly _file_name: string;
 	private readonly _file: string;
 	private readonly _key: SettingKeys;
-	private readonly _value: Settings;
+	private readonly _value: InputSettings;
 	private readonly _default: Settings;
 
 	public constructor(
 		key: SettingKeys,
-		value: Settings,
+		value: InputSettings,
 		file: string,
 		fileName: string = ".boldacfg"
 	) {
@@ -32,7 +37,7 @@ class Validator {
 
 		this._key = key;
 		this._value = value;
-		this._default = settings[key] || null;
+		this._default = settings[key];
 	}
 
 	private readonly PrintValueError = (error: string): Settings => {
@@ -60,25 +65,28 @@ class Validator {
 
 		if (!value)
 			return this.PrintValueError(`Your value at key "${key}" is not defined`);
+
 		if (!Array.isArray(value))
 			return this.PathValidator(value)
 				? value
 				: this.PrintValueError(`Your value at key "${key}" not that type`);
 
-		for (const p of value) {
-			if (typeof p !== "string" && !Array.isArray(p))
-				return this.PrintValueError(`At your key: "${key}" a ${p} not that type`);
+		for (const index in value) {
+			const a = value[index];
 
-			let parse: path.ParsedPath;
+			if (Array.isArray(a)) value[index] = join(...a);
 
-			if (typeof p === "string") parse = path.parse(p);
-			else parse = path.parse(path.join(...p));
+			const vPath = value[index] as string;
+			const parsed = path.parse(vPath);
 
-			if ((!(parse.dir === "") || !(parse.root === "")) && !Array.isArray(p))
-				return this.PrintValueError(`At your key: "${key}" a ${p} not file`);
+			if (typeof vPath !== "string" && !Array.isArray(vPath))
+				return this.PrintValueError(`At your key: "${key}" a ${vPath} not that type`);
+
+			if ((!(parsed.dir === "") || !(parsed.root === "")) && !Array.isArray(vPath))
+				return this.PrintValueError(`At your key: "${key}" a ${vPath} not file`);
 		}
 
-		return value;
+		return value as Settings;
 	};
 
 	public readonly init = (): Settings => {
@@ -87,11 +95,14 @@ class Validator {
 		console.log("validating " + "\u001B[33;1m" + key + "\u001B[0m" + "...");
 
 		if (!value) return this.PrintValueError(`Value at key: "${key}" is not defined`);
+		
 		if (Array.isArray(value)) return this.ArrayValidator();
+		
 		if (typeof value === "string")
 			return this.PathValidator(value)
 				? value
 				: this.PrintValueError(`Value at key: "${key}" is not that type`);
+
 		if (typeof value !== "string")
 			return this.PrintValueError(`Value at key: ${key} not that type`);
 
@@ -101,7 +112,7 @@ class Validator {
 
 class Configurator {
 	private readonly _dir: string = path.join("./");
-	private readonly _config: Config = settings;
+	private readonly _config: OldConfigType = settings;
 	private readonly _path: string;
 	private readonly _create_file;
 
@@ -173,18 +184,22 @@ class Configurator {
 		).init();
 	};
 
-	private Validate(config: Config) {
+	private Validate(config: OldConfigType) {
+		if (!config.fbuild) return;
+		if (!config.fsource) return;
+
 		if (config.fbuild.length < config.fsource.length)
 			throw new Error("build files must be more or equal than source");
 
-		for (const key in settings) {
-			const value = this.Validator(key as SettingKeys, config[key]);
+		for (const k in settings) {
+			const key: SettingKeys = k as any;
+			const value = this.Validator(key, config[key] || settings[key]);
 
 			if (settings[key]?.toString() !== value?.toString())
 				console.log("\u001B[33;1m" + key + "\u001B[0m" + " is passed validation");
 			else console.log("\u001B[33;1m" + key + "\u001B[0m" + " is returned to default");
 
-			this._config[key] = value;
+			this._config[key] = value as any;
 		};
 	};
 
@@ -225,7 +240,7 @@ class Configurator {
 		this.Read();
 	};
 
-	get config(): Config {
+	get config(): OldConfigType {
 		return this._config;
 	}
 }

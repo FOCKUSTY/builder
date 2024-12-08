@@ -6,7 +6,7 @@ import fs from "fs";
 const { config } = new Configurator();
 
 class Builder {
-	private readonly _build = join(__dirname, config.build);
+	private readonly _build = join("./", config.build);
 
 	private readonly CreateDir = (dirPath: string = this._build) => {
 		if (!fs.existsSync(dirPath)) {

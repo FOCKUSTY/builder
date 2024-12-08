@@ -6,7 +6,7 @@ export type StandartSettings = Exclude<Settings, null>;
 
 export type OldConfigType = {
 	dirs: string[];
-	
+
 	fbuild: string[];
 	fsource: string[];
 

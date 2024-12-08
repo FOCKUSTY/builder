@@ -80,7 +80,9 @@ class Validator {
 			const parsed = path.parse(vPath);
 
 			if (typeof vPath !== "string" && !Array.isArray(array))
-				return this.PrintValueError(`At your key: "${key}" a ${vPath} not that type`);
+				return this.PrintValueError(
+					`At your key: "${key}" a ${vPath} not that type`
+				);
 
 			if ((!(parsed.dir === "") || !(parsed.root === "")) && !Array.isArray(array))
 				return this.PrintValueError(`At your key: "${key}" a ${vPath} not file`);
@@ -95,9 +97,9 @@ class Validator {
 		console.log("validating " + "\u001B[33;1m" + key + "\u001B[0m" + "...");
 
 		if (!value) return this.PrintValueError(`Value at key: "${key}" is not defined`);
-		
+
 		if (Array.isArray(value)) return this.ArrayValidator();
-		
+
 		if (typeof value === "string")
 			return this.PathValidator(value)
 				? value
@@ -124,15 +126,10 @@ class Configurator {
 	}
 
 	private ValidatePath() {
-		const names = [
-			".boldacfg.dev",
-			".boldacfg.prod",
-			".boldacfg"
-		];
-		
+		const names = [".boldacfg.dev", ".boldacfg.prod", ".boldacfg"];
+
 		const filteted: string[] = [];
-		const files = fs.readdirSync(this._dir).filter(name =>
-			name.match(regexp));
+		const files = fs.readdirSync(this._dir).filter((name) => name.match(regexp));
 
 		for (const name of files) {
 			const matched = name.match(regexp);
@@ -142,21 +139,21 @@ class Configurator {
 			if (name.includes(".example")) continue;
 
 			filteted.push(name);
-		};
+		}
 
 		for (const ffile of filteted) {
 			if (names.includes(ffile)) {
 				const file = path.join(this._dir, ffile);
-				
+
 				if (!fs.existsSync(file)) continue;
 				else return file;
 			} else if (regexp.test(ffile)) {
 				return path.join(this._dir, ffile);
-			};
-		};
+			}
+		}
 
 		return path.join(this._dir, ".boldacfg");
-	};
+	}
 
 	private Create() {
 		try {
@@ -168,8 +165,8 @@ class Configurator {
 			return settings;
 		} catch (err: any) {
 			throw new Error(err);
-		};
-	};
+		}
+	}
 
 	private Validator(key: SettingKeys, value: Settings): Settings {
 		return new Validator(
@@ -182,7 +179,7 @@ class Configurator {
 			),
 			this._path
 		).init();
-	};
+	}
 
 	private Validate(config: OldConfigType) {
 		if (!config.fbuild) return;
@@ -197,11 +194,14 @@ class Configurator {
 
 			if (settings[key]?.toString() !== value?.toString())
 				console.log("\u001B[33;1m" + key + "\u001B[0m" + " is passed validation");
-			else console.log("\u001B[33;1m" + key + "\u001B[0m" + " is returned to default");
+			else
+				console.log(
+					"\u001B[33;1m" + key + "\u001B[0m" + " is returned to default"
+				);
 
 			this._config[key] = value as any;
-		};
-	};
+		}
+	}
 
 	private Read() {
 		if (!fs.existsSync(this._path) && this._create_file) this.Create();
@@ -227,14 +227,14 @@ class Configurator {
 			JSON.stringify(json, (_, value) => {
 				eval(`file = ${value}`);
 			});
-	
+
 			this.Validate(file);
 		} catch (err: any) {
 			if (!fs.existsSync(this._path)) return;
 
 			throw new Error(err);
-		};
-	};
+		}
+	}
 
 	private readonly init = () => {
 		this.Read();

@@ -1,83 +1,89 @@
 import Configurator from "./configurator";
 
-import { join, parse } from 'path';
-import fs from 'fs';
+import { join, parse } from "path";
+import fs from "fs";
 
 const { config } = new Configurator();
 
 class Builder {
-    private readonly _build = join(__dirname, config.build);
+	private readonly _build = join(__dirname, config.build);
 
-    private readonly CreateDir = (dirPath: string = this._build) => {
-        if (!fs.existsSync(dirPath)) {
-            console.log("creating dir...");
+	private readonly CreateDir = (dirPath: string = this._build) => {
+		if (!fs.existsSync(dirPath)) {
+			console.log("creating dir...");
 
-            fs.mkdirSync(dirPath);
-        } else {
-            console.log("cleaning dir...");
+			fs.mkdirSync(dirPath);
+		} else {
+			console.log("cleaning dir...");
 
-            const files = fs.readdirSync(dirPath);
+			const files = fs.readdirSync(dirPath);
 
-            for (const index in files) {
-                const file = files[index];
+			for (const index in files) {
+				const file = files[index];
 
-                if (!config.fsource.includes(file as any)) continue;
-                
-                fs.unlinkSync(join(dirPath, file));
-            };
-        };
-    };
+				if (!config.fsource.includes(file as any)) continue;
 
-    private readonly CopyFile = (filePath: string, buildPath: string) => {
-        const parsed = parse(filePath);
-        const builded = parse(buildPath);
+				fs.unlinkSync(join(dirPath, file));
+			}
+		}
+	};
 
-        if (!fs.existsSync(filePath))
-            return;
+	private readonly CopyFile = (filePath: string, buildPath: string) => {
+		const parsed = parse(filePath);
+		const builded = parse(buildPath);
 
-        if (fs.existsSync(buildPath)) {
-            console.log("deleting " + "\u001B[33;1m" + builded.name + builded.ext + "\u001B[0m" + "...");
-            fs.unlinkSync(buildPath);
-        }
+		if (!fs.existsSync(filePath)) return;
 
-        console.log("copying " + "\u001B[33;1m" + parsed.name + parsed.ext + "\u001B[0m" + "...");
+		if (fs.existsSync(buildPath)) {
+			console.log(
+				"deleting " +
+					"\u001B[33;1m" +
+					builded.name +
+					builded.ext +
+					"\u001B[0m" +
+					"..."
+			);
+			fs.unlinkSync(buildPath);
+		}
 
-        fs.copyFileSync(filePath, buildPath);
-        console.log("copyied!");
-    };
+		console.log(
+			"copying " + "\u001B[33;1m" + parsed.name + parsed.ext + "\u001B[0m" + "..."
+		);
 
-    private readonly CopyFiles = (files: string[]) => {
-        this.CreateDir();
+		fs.copyFileSync(filePath, buildPath);
+		console.log("copyied!");
+	};
 
-        for (const index in files) {
-            const file = files[index];
+	private readonly CopyFiles = (files: string[]) => {
+		this.CreateDir();
 
-            const filePath = join(config.source, file);
-            const buildPath = config.fbuild[index];
+		for (const index in files) {
+			const file = files[index];
 
-            this.CopyFile(filePath, join(config.build, buildPath));
-        }
-    };
+			const filePath = join(config.source, file);
+			const buildPath = config.fbuild[index];
 
-    private readonly CopyDirs = (dirs: string[]) => {
-        for (const dir of dirs) {
-            if (Array.isArray(dir)) {
-                let fullDir: string[] = [];
+			this.CopyFile(filePath, join(config.build, buildPath));
+		}
+	};
 
-                for (const d of dir) {
-                    fullDir.push(d);
-                    this.CreateDir(join(this._build, ...fullDir));
-                };
-            }
-            else
-                this.CreateDir(join(this._build, dir));
-        };
-    };
+	private readonly CopyDirs = (dirs: string[]) => {
+		for (const dir of dirs) {
+			if (Array.isArray(dir)) {
+				let fullDir: string[] = [];
 
-    public execute() {
-        this.CopyDirs(config.dirs);
-        this.CopyFiles(config.fsource);
-    };
+				for (const d of dir) {
+					fullDir.push(d);
+					this.CreateDir(join(this._build, ...fullDir));
+				}
+			} else this.CreateDir(join(this._build, dir));
+		}
+	};
+
+	public execute() {
+		this.CopyDirs(config.dirs);
+		this.CopyFiles(config.fsource);
+	}
 }
 
 export default Builder;

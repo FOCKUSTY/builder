@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import yargs, { Options as Yargs } from "yargs";
 
 import path from "path";

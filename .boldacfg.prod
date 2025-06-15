@@ -1,7 +1,12 @@
 {
+  "catalogs": [
+
+  ],
+
   "dirs": [
     "assets"
   ],
+
   "fsource": [
     "README.md",
     "LICENSE",
@@ -10,6 +15,7 @@
     "package.json",
     ["assets", "tvc.png"]
   ],
+  
   "fbuild": [
     "README.md",
     "LICENSE",

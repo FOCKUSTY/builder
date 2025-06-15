@@ -1,9 +1,10 @@
 {
-    "dirs": [],
+  "catalogs": [],
+  "dirs": [],
 
-    "fsource": [],
-    "fbuild": [],
+  "fsource": [],
+  "fbuild": [],
     
-    "source": "",
-    "build": ""
+  "source": "",
+  "build": ""
 }

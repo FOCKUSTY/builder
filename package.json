@@ -1,61 +1,59 @@
 {
-  "name": "fock-builder",
-  "version": "1.1.0-beta",
-  "description": "simple builder for you library or project",
-  "main": "index.ts",
-  "scripts": {
-    "dev:config": "set NODE_ENV=config&& nodemon ./start.ts",
-    "build:tsc": "tsc",
-    "build:builder": "set NODE_ENV=build&& ts-node ./start.ts",
-    "build": "npm run build:tsc && npm run build:builder"
-  },
-  "keywords": [
-    "libs",
-    "builder",
-    "copier"
-  ],
-  "files": [
-    "index.js",
-    "configurator.js",
-    "config.types.js",
-    "builder.js",
-
-    "index.d.ts",
-    "configurator.d.ts",
-    "config.types.d.ts",
-    "builder.d.ts",
-    
-    "bin/index.js",
-    "bin/commands/config.js",
-    "bin/commands/start.js"
-  ],
-  "devDependencies": {
-    "@types/node": "^22.7.4",
-    "@types/yargs": "^17.0.33",
-    "nodemon": "^3.1.7",
-    "prettier": "^3.3.3",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.6.2"
-  },
-  "dependencies": {
-    "node": "^22.9.0",
-    "yargs": "^17.7.2"
-  },
-  "bin": {
-    "fockbuilder": "./bin/index.js"
-  },
-  "author": "FOCKUSTY",
-  "license": "MIT",
-  "engines": {
-    "node": ">=7.6.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/FOCKUSTY/builder"
-  },
-  "bugs": {
-    "email": "wwddwwwd@mail.ru",
-    "url": "https://github.com/FOCKUSTY/builder/issues"
-  }
+	"name": "fock-builder",
+	"version": "1.1.0-beta",
+	"description": "simple builder for you library or project",
+	"main": "index.ts",
+	"scripts": {
+		"dev:config": "set NODE_ENV=config&& nodemon ./start.ts",
+		"build:tsc": "tsc",
+		"build:builder": "set NODE_ENV=build&& ts-node ./start.ts",
+		"build": "npm run build:tsc && npm run build:builder"
+	},
+	"keywords": [
+		"libs",
+		"builder",
+		"copier"
+	],
+	"files": [
+		"index.js",
+		"configurator.js",
+		"config.types.js",
+		"builder.js",
+		"index.d.ts",
+		"configurator.d.ts",
+		"config.types.d.ts",
+		"builder.d.ts",
+		"bin/index.js",
+		"bin/commands/config.js",
+		"bin/commands/start.js"
+	],
+	"devDependencies": {
+		"@types/node": "^22.7.4",
+		"@types/yargs": "^17.0.33",
+		"nodemon": "^3.1.7",
+		"prettier": "^3.3.3",
+		"ts-node": "^10.9.2",
+		"tsconfig-paths": "^4.2.0",
+		"typescript": "^5.6.2"
+	},
+	"dependencies": {
+		"node": "^22.9.0",
+		"yargs": "^17.7.2"
+	},
+	"bin": {
+		"fockbuilder": "./bin/index.js"
+	},
+	"author": "FOCKUSTY",
+	"license": "MIT",
+	"engines": {
+		"node": ">=7.6.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/FOCKUSTY/builder"
+	},
+	"bugs": {
+		"email": "wwddwwwd@mail.ru",
+		"url": "https://github.com/FOCKUSTY/builder/issues"
+	}
 }

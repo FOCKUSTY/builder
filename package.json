@@ -43,7 +43,11 @@
   "bin": {
     "fockbuilder": "./bin/index.js"
   },
-  "author": "FOCKUSTY",
+  "author": {
+    "name": "FOCKUSTY",
+    "email": "viserd.yt@gmail.com",
+    "url": "https://fockusty.netlify.app/"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=7.6.0"

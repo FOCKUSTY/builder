@@ -5,13 +5,13 @@ export type InputSettings = Settings | string[][];
 export type StandartSettings = Exclude<Settings, null>;
 
 export type OldConfigType = {
-	dirs: string[];
+  dirs: string[];
 
-	fbuild: string[];
-	fsource: string[];
+  fbuild: string[];
+  fsource: string[];
 
-	build: string;
-	source: string;
+  build: string;
+  source: string;
 };
 
 export type Config<T> = Record<SettingKeys, T>;

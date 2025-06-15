@@ -1,25 +1,24 @@
 {
-    "dirs": [
-        "assets"
-    ],
-
-    "fsource": [
-        "README.md",
-        "LICENSE",
-        ".gitignore",
-        ".prettierrc",
-        "package.json",
-        ["assets", "tvc.png"]
-    ],
-    "fbuild": [
-        "README.md",
-        "LICENSE",
-        ".gitignore",
-        ".prettierrc",
-        "package.json",
-        ["assets", "tvc.png"]
-    ],
-    
-    "source": "./",
-    "build": "./dist/"
+  "dirs": [
+    "assets"
+  ],
+  "fsource": [
+    "README.md",
+    "LICENSE",
+    ".gitignore",
+    ".prettierrc",
+    "package.json",
+    ["assets", "tvc.png"]
+  ],
+  "fbuild": [
+    "README.md",
+    "LICENSE",
+    ".gitignore",
+    ".prettierrc",
+    "package.json",
+    ["assets", "tvc.png"]
+  ],
+  
+  "source": "./",
+  "build": "./dist/"
 }

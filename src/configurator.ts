@@ -9,14 +9,15 @@ import type {
 } from "./config.types";
 
 const CATALOG_REGULAR_EXPRESSION = /(\.\/|\.\.\/)([\w*]+\/?)+/gi;
-const CONFIG_REGULAR_EXPRESSION = /\.boldacfg.+/;
+const CONFIG_REGULAR_EXPRESSION = /\.boldacfg.*/;
 const CONFIG_NAMES = [
+  ".boldacfg.dev.json",
+  ".boldacfg.prod.json",
+  ".boldacfg.json",
+  
   ".boldacfg.dev",
   ".boldacfg.prod",
   ".boldacfg",
-  ".boldacfg.dev.json",
-  ".boldacfg.prod.json",
-  ".boldacfg.json"
 ];
 export const EXCLUDE = [
   "./**/node_modules",
@@ -198,15 +199,15 @@ class Configurator {
       filtered.push(name);
     }
 
-    for (const ffile of filtered) {
-      const file = path.join(this._dir, ffile);
+    for (const filteredFile of filtered) {
+      const file = path.join(this._dir, filteredFile);
       
-      if (CONFIG_NAMES.includes(ffile)) {
+      if (CONFIG_NAMES.includes(filteredFile)) {
         if 
         (!fs.existsSync(file)) continue;
         else return file;
-      } else if (CONFIG_REGULAR_EXPRESSION.test(ffile)) {
-        return path.join(this._dir, ffile);
+      } else if (CONFIG_REGULAR_EXPRESSION.test(filteredFile)) {
+        return path.join(this._dir, filteredFile);
       }
     }
 

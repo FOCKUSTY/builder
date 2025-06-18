@@ -8,12 +8,36 @@ import type {
   OldConfigType
 } from "./config.types";
 
-const regexp = /\.boldacfg\.([a-z]+)/;
+const CATALOG_REGULAR_EXPRESSION = /(\.\/|\.\.\/)([\w*]+\/?)+/gi;
+const CONFIG_REGULAR_EXPRESSION = /\.boldacfg.+/;
+const CONFIG_NAMES = [
+  ".boldacfg.dev",
+  ".boldacfg.prod",
+  ".boldacfg",
+  ".boldacfg.dev.json",
+  ".boldacfg.prod.json",
+  ".boldacfg.json"
+];
+export const EXCLUDE = [
+  "./**/node_modules",
+  "./**/.git",
+  "./**/.obsidian",
+  "./**/.github"
+];
+export const IGNORE_FILES = [
+  ".boldacfg.*",
+  ".prettierrc*",
+  "package-lock.json"
+];
+
 const settings: OldConfigType = {
+  catalogs: [],
+  ignore_catalogs: EXCLUDE,
+  ignore_files: IGNORE_FILES,
   dirs: [],
 
-  fsource: [],
-  fbuild: [],
+  source_files: [],
+  build_files: [],
 
   build: "./build",
   source: "./"
@@ -40,7 +64,48 @@ class Validator {
     this._default = settings[key];
   }
 
-  private readonly PrintValueError = (error: string): Settings => {
+  public init(): Settings {
+    const { key, value } = { key: this._key, value: this._value };
+
+    console.log("validating " + "\u001B[33;1m" + key + "\u001B[0m" + "...");
+
+    if (!value)
+      return this.PrintValueError(`Value at key: "${key}" is not defined`);
+
+    if (Array.isArray(value)) return this.ArrayValidator();
+
+    if (typeof value === "string")
+      return this.PathValidator(value)
+        ? value
+        : this.PrintValueError(`Value at key: "${key}" is not that type`);
+
+    if (typeof value !== "string")
+      return this.PrintValueError(`Value at key: ${key} not that type`);
+
+    return value;
+  };
+
+  private readonly PathValidator = (path: string): boolean => {
+    if (typeof path !== "string") return false;
+    if (!path.startsWith("./") && !path.startsWith("../")) return false;
+
+    return true;
+  };
+
+  private readonly CatalogValidator = (catalogs: string[] | string[][]): boolean => {
+    return catalogs.every((catalog) => {
+      if (Array.isArray(catalog)) return this.PrintValueError('Your value in key "catalogs" is not a string', false);
+      if (!this.PathValidator(catalog)) return this.PrintValueError('Your value in key "catalogs" is failed path validation', false);
+
+      const matched = catalog.match(CATALOG_REGULAR_EXPRESSION);
+      
+      if (!matched) return this.PrintValueError('Your value in key "catalogs" is failed path validation', false);
+
+      return true;
+    });
+  };
+
+  private readonly PrintValueError = <T>(error: string, ret?: T) => {
     console.log("To fixing error:");
     console.log("Open " + this._file_name);
 
@@ -50,14 +115,7 @@ class Validator {
     console.log(this._file);
     console.log();
 
-    return this._default;
-  };
-
-  private readonly PathValidator = (path: string): boolean => {
-    if (typeof path !== "string") return false;
-    if (!path.startsWith("./") && !path.startsWith("../")) return false;
-
-    return true;
+    return ret ? ret : this._default;
   };
 
   private readonly ArrayValidator = (): Settings => {
@@ -79,42 +137,35 @@ class Validator {
       const vPath = value[index] as string;
       const parsed = path.parse(vPath);
 
-      if (typeof vPath !== "string" && !Array.isArray(array))
+      const isArrayValid = typeof vPath === "string" || Array.isArray(array);
+      if (!isArrayValid)
         return this.PrintValueError(
           `At your key: "${key}" a ${vPath} not that type`
         );
 
-      if (
-        (!(parsed.dir === "") || !(parsed.root === "")) &&
-        !Array.isArray(array)
-      )
+      const isCatalog = (key === "catalogs");
+      if (isCatalog) {
+        return this.CatalogValidator(value)
+          ? value as string[]
+          : this.PrintValueError(`Your value at key "${key} is not failed validation"`);
+      };
+
+      const isIgnoreCatalogs = (key === "ignore_catalogs");
+      if (isIgnoreCatalogs) {
+        return value.every(v => typeof v === "string")
+          ? value
+          : this.PrintValueError(`Your value at key "${key} is not a string"`);
+      }
+
+      const isNotFile = (!(parsed.dir === "") || !(parsed.root === "")) && !Array.isArray(array)
+      if (isNotFile) {
         return this.PrintValueError(
           `At your key: "${key}" a ${vPath} not file`
         );
+      }
     }
 
     return value as Settings;
-  };
-
-  public readonly init = (): Settings => {
-    const { key, value } = { key: this._key, value: this._value };
-
-    console.log("validating " + "\u001B[33;1m" + key + "\u001B[0m" + "...");
-
-    if (!value)
-      return this.PrintValueError(`Value at key: "${key}" is not defined`);
-
-    if (Array.isArray(value)) return this.ArrayValidator();
-
-    if (typeof value === "string")
-      return this.PathValidator(value)
-        ? value
-        : this.PrintValueError(`Value at key: "${key}" is not that type`);
-
-    if (typeof value !== "string")
-      return this.PrintValueError(`Value at key: ${key} not that type`);
-
-    return value;
   };
 }
 
@@ -132,30 +183,29 @@ class Configurator {
   }
 
   private ValidatePath() {
-    const names = [".boldacfg.dev", ".boldacfg.prod", ".boldacfg"];
-
-    const filteted: string[] = [];
+    const filtered: string[] = [];
     const files = fs
       .readdirSync(this._dir)
-      .filter((name) => name.match(regexp));
+      .filter((name) => name.match(CONFIG_REGULAR_EXPRESSION));
 
     for (const name of files) {
-      const matched = name.match(regexp);
+      const matched = name.match(CONFIG_REGULAR_EXPRESSION);
 
       if (!matched) continue;
       if (matched.input !== matched[0]) continue;
       if (name.includes(".example")) continue;
 
-      filteted.push(name);
+      filtered.push(name);
     }
 
-    for (const ffile of filteted) {
-      if (names.includes(ffile)) {
-        const file = path.join(this._dir, ffile);
-
-        if (!fs.existsSync(file)) continue;
+    for (const ffile of filtered) {
+      const file = path.join(this._dir, ffile);
+      
+      if (CONFIG_NAMES.includes(ffile)) {
+        if 
+        (!fs.existsSync(file)) continue;
         else return file;
-      } else if (regexp.test(ffile)) {
+      } else if (CONFIG_REGULAR_EXPRESSION.test(ffile)) {
         return path.join(this._dir, ffile);
       }
     }
@@ -183,17 +233,17 @@ class Configurator {
       JSON.stringify(
         JSON.parse(fs.readFileSync(this._path, "utf-8")),
         undefined,
-        0
+        2
       ),
       this._path
     ).init();
   }
 
   private Validate(config: OldConfigType) {
-    if (!config.fbuild) return;
-    if (!config.fsource) return;
+    if (!config.build_files) return;
+    if (!config.source_files) return;
 
-    if (config.fbuild.length < config.fsource.length)
+    if (config.build_files.length < config.source_files.length)
       throw new Error("build files must be more or equal than source");
 
     for (const k in settings) {
@@ -211,25 +261,28 @@ class Configurator {
 
       this._config[key] = value as any;
     }
+
+    this.config.ignore_catalogs.push(this.config.build + "/*");
   }
 
   private Read() {
-    if (!fs.existsSync(this._path) && this._create_file) this.Create();
+    if (!fs.existsSync(this._path) && this._create_file) {
+      this.Create();
+    }
 
-    if (
-      fs.existsSync(this._path) &&
+    const isEmpty = fs.existsSync(this._path) &&
       Object.keys(JSON.parse(fs.readFileSync(this._path, "utf-8") || "{}"))
-        .length === 0
-    ) {
+        .length === 0;
+    if (isEmpty) {
       console.log(
         "\u001B[33;1m" +
-          "Your config is empty, returning to default" +
-          "\u001B[0m"
+        "Your config is empty, returning to default" +
+        "\u001B[0m"
       );
 
       fs.unlinkSync(this._path);
       this.Create();
-    }
+    };
 
     try {
       let file: any;

@@ -1,10 +1,11 @@
 {
   "name": "fock-builder",
-  "version": "1.1.0-beta",
+  "version": "2.0.0-beta",
   "description": "simple builder for you library or project",
   "main": "index.ts",
   "scripts": {
     "dev:config": "set NODE_ENV=config&& nodemon ./src/start.ts",
+    "dev:builder": "set NODE_ENV=builder&& nodemon ./src/start.ts",
     "build:tsc": "tsc",
     "build:builder": "set NODE_ENV=build&& ts-node ./src/start.ts",
     "build": "npm run build:tsc && npm run build:builder"

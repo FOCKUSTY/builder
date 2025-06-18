@@ -1,14 +1,29 @@
-export type SettingKeys = "dirs" | "fbuild" | "fsource" | "build" | "source";
+export const SETTINGS_KEYS = [
+  "dirs",
+  "catalogs",
+  "ignore_catalogs",
+  "ignore_files",
+  "build_files",
+  "source_files",
+  "build",
+  "source"
+] as const;
+
+export type SettingKeys = (typeof SETTINGS_KEYS)[number];
 export type Settings = string | string[] | null;
 
 export type InputSettings = Settings | string[][];
 export type StandartSettings = Exclude<Settings, null>;
 
 export type OldConfigType = {
+  catalogs: string[];
+  ignore_catalogs: string[];
+  ignore_files: string[];
+  
   dirs: string[];
 
-  fbuild: string[];
-  fsource: string[];
+  build_files: string[];
+  source_files: string[];
 
   build: string;
   source: string;

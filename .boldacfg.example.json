@@ -1,0 +1,19 @@
+{
+  "catalogs": [],
+  "ignore_catalogs": [
+    "./**/node_modules/**",
+    "./**/.git",
+    "./**/.obsidian",
+    "./**/.github"
+  ],
+
+  "ignore_files": [],
+
+  "dirs": [],
+
+  "source_files": [],
+  "build_files": [],
+    
+  "source": "",
+  "build": ""
+}

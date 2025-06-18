@@ -1,0 +1,24 @@
+{
+  "catalogs": [
+    "./**/*"
+  ],
+
+  "ignore_catalogs": [
+    "./**/node_modules/**",
+    "./**/.git",
+    "./**/.obsidian",
+    "./**/.github",
+    "./src/**/*"
+  ],
+
+  "ignore_files": [
+    "package-lock.json"
+  ],
+
+  "dirs": [],
+  "source_files": [],
+  "build_files": [],
+  
+  "source": "./",
+  "build": "./dist/"
+}

@@ -5,8 +5,92 @@ import fs from "fs";
 
 const { config } = new Configurator();
 
+const CATALOG_REGULAR_EXPRESSION = ["**", "?([\\w]+)?"] as const;
+const FILE_REGULAR_EXPRESSION = ["*", "?(.+)"] as const;
+const SPECIAL_SYMBOLS = [".", "/"] as const;
+
+const createRegularExpression = (catalog: string, flags: string = "gi") => {
+  let output = `${catalog}`;
+
+  for (const specialSymbol of SPECIAL_SYMBOLS) {
+    output = output.replaceAll(specialSymbol, "\\" + specialSymbol);
+  };
+
+  return new RegExp(output
+    .replaceAll(...CATALOG_REGULAR_EXPRESSION)
+    .replaceAll(...FILE_REGULAR_EXPRESSION),
+    flags
+  );
+};
+
+const resolve = (path: string, ...paths: string[]) => join(path, ...paths);
+
+type Dirs = {
+  [key: string]: {
+    name: string,
+    path: string,
+  } & ({
+    isDir: true,
+    dirs: Dirs
+  } | {
+    isDir: false,
+    dirs: null
+  })
+};
+
+type RegExpFilterData = {
+  ignore: RegExp[],
+  includes: RegExp[],
+  ignore_files: RegExp[]
+};
+
+const ROOT = "./" as const;
+
+class DirManager {
+  public constructor(
+    public readonly dir: Dirs,
+  ) {};
+
+  public static resolve(path: string) {
+    return ROOT + `${path}`.replaceAll("\\", "/");
+  }
+
+  public mapDir(dir: Dirs = this.dir) {
+    const paths = (Object.values(dir).map(d =>
+      d.isDir
+        ? this.mapDir(d.dirs)
+        : d.path
+    ) as (string | string[])[]);
+
+    return paths.flatMap((v) => v);
+  };
+
+  public regularExpressionfilter(data: string[], regExps: RegExpFilterData["includes"]) {
+    return data.filter(path => {
+      if (regExps.filter(r => DirManager.resolve(path).match(r) !== null).length === 0) return false;
+      
+      return true;
+    });
+  };
+}
+
 class Builder {
-  private readonly _build = join("./", config.build);
+  private readonly _build = join(ROOT, config.build);
+  private readonly _reg_exp_filter_data: RegExpFilterData;
+
+  public constructor() {
+    this._reg_exp_filter_data = {
+      ignore: config.ignore_catalogs.map(catalog => createRegularExpression(catalog)),
+      ignore_files: config.ignore_files.map(file => createRegularExpression(file)),
+      includes: config.catalogs.map(catalog => createRegularExpression(catalog))
+    };
+  }
+
+  public execute() {
+    this.CopyDirs(config.dirs);
+    this.CopyFiles(config.source_files);
+    this.CopyCatalogs();
+  }
 
   private readonly CreateDir = (dirPath: string = this._build) => {
     if (!fs.existsSync(dirPath)) {
@@ -21,7 +105,7 @@ class Builder {
       for (const index in files) {
         const file = files[index];
 
-        if (!config.fsource.includes(file as any)) continue;
+        if (!config.source_files.includes(file as any)) continue;
 
         fs.unlinkSync(join(dirPath, file));
       }
@@ -66,7 +150,7 @@ class Builder {
       const file = files[index];
 
       const filePath = join(config.source, file);
-      const buildPath = config.fbuild[index];
+      const buildPath = config.build_files[index];
 
       this.CopyFile(filePath, join(config.build, buildPath));
     }
@@ -85,10 +169,109 @@ class Builder {
     }
   };
 
-  public execute() {
-    this.CopyDirs(config.dirs);
-    this.CopyFiles(config.fsource);
+  private readonly ReadDirsAndFiles = (dir: string, dirs: Dirs = {}) => {
+		const resolvedPath = resolve(dir);
+		const folder = fs.readdirSync(resolvedPath);
+
+		for (const file of folder) {
+      const path = resolve(resolvedPath, file);
+      const pathToFilter = DirManager.resolve(path);
+      const fileName = parse(path).name + parse(path).ext;
+
+      const validated =
+        this._reg_exp_filter_data.ignore.every(r => !(pathToFilter.match(r) && pathToFilter.match(r)![0] === pathToFilter))
+        && this._reg_exp_filter_data.ignore_files.every(r => !(fileName.match(r) && fileName.match(r)![0] === fileName));
+      
+      if (!validated) continue;
+
+      try {
+				const folderPath = path;
+				fs.readdirSync(folderPath);
+
+				dirs[folderPath] = {
+          name: file,
+          path: folderPath,
+          isDir: true,
+          dirs: this.ReadDirsAndFiles(folderPath)
+        };
+			} catch (err) {
+				dirs[file] = {
+          name: file,
+          path: path,
+          isDir: false,
+          dirs: null
+        };
+			}
+		}
+
+		return dirs;
+  };
+
+  private readonly ValidateCatalogs = () => {
+    const dir = new DirManager(this.ReadDirsAndFiles(ROOT));
+
+    return dir.regularExpressionfilter(dir.mapDir(), this._reg_exp_filter_data.includes);
   }
+
+  private readonly CleanCatalogs = (catalogs: string[]) => {
+    catalogs.forEach(catalog => {
+      const fullPath: string[] = [];
+      
+      catalog.split("\\").forEach(path => {
+        fullPath.push(path);
+        
+        const parsed = parse(join(...fullPath));
+        console.log(
+          "cleaning " +
+          "\u001B[33;1m" +
+          parsed.name +
+          parsed.ext +
+          "\u001B[0m" +
+          "..."
+        );
+
+        try {
+          if (fs.existsSync(join(this._build, ...fullPath))) {
+            fs.unlinkSync(join(this._build, ...fullPath));
+          }
+        } catch {};
+      })
+    });
+  }
+
+  private readonly CopyCatalog = (catalog: string) => {
+    const fullPath: string[] = [];
+    
+    catalog.split("\\").forEach(path => {
+      fullPath.push(path);
+      const parsed = parse(join(...fullPath));
+      console.log(
+        "copying " +
+        "\u001B[33;1m" +
+        parsed.name +
+        parsed.ext +
+        "\u001B[0m" +
+        "..."
+      );
+
+      try {
+        fs.readdirSync(join(...fullPath));
+      
+        if (!fs.existsSync(join(this._build, ...fullPath))) {
+          fs.mkdirSync(join(this._build, ...fullPath));
+        }
+      } catch {
+        fs.copyFileSync(join(...fullPath), join(this._build, ...fullPath))
+      };
+    });
+  };
+
+  private readonly CopyCatalogs = () => {
+    const catalogs = this.ValidateCatalogs();
+
+    this.CleanCatalogs(catalogs);
+    catalogs.forEach(catalog => this.CopyCatalog(catalog));
+  };
 }
 
 export default Builder;

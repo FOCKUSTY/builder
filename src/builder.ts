@@ -1,7 +1,7 @@
 import Configurator from "./configurator";
 
-import { join, parse } from "path";
-import fs from "fs";
+import { join, parse, normalize } from "path";
+import fs, { existsSync, mkdirSync } from "fs";
 
 const { config } = new Configurator();
 
@@ -23,7 +23,7 @@ const createRegularExpression = (catalog: string, flags: string = "gi") => {
   );
 };
 
-const resolve = (path: string, ...paths: string[]) => join(path, ...paths);
+const resolve = (...paths: string[]) => normalize(join(...paths));
 
 type Dirs = {
   [key: string]: {
@@ -55,6 +55,29 @@ class DirManager {
     return ROOT + `${path}`.replaceAll("\\", "/");
   }
 
+  public infinityParse(path: string, paths: string[] = []): string[] {
+    const { dir } = parse(path);
+
+    if (!dir) {
+      return paths
+    };
+    
+    paths.push(...this.infinityParse(dir));
+    paths.push(dir);
+    
+    return paths;
+  };
+
+  public mapDirWithPath(dir: Dirs = this.dir) {
+    const paths = (Object.values(dir).map(d =>
+      d.isDir
+        ? this.mapDirWithPath(d.dirs)
+        : { path: d.path, dirs: parse(d.path).dir }
+    ) as (string | string[])[]);
+
+    return paths.flatMap((v) => v);
+  };
+
   public mapDir(dir: Dirs = this.dir) {
     const paths = (Object.values(dir).map(d =>
       d.isDir
@@ -75,7 +98,7 @@ class DirManager {
 }
 
 class Builder {
-  private readonly _build = join(ROOT, config.build);
+  private readonly _build = resolve(ROOT, config.build);
   private readonly _reg_exp_filter_data: RegExpFilterData;
 
   public constructor() {
@@ -87,6 +110,7 @@ class Builder {
   }
 
   public execute() {
+
     this.CopyDirs(config.dirs);
     this.CopyFiles(config.source_files);
     this.CopyCatalogs();
@@ -104,7 +128,7 @@ class Builder {
       for (const file of files) {
         if (!config.source_files.includes(file as any)) continue;
 
-        fs.unlinkSync(join(dirPath, file));
+        fs.unlinkSync(resolve(dirPath, file));
       }
     }
   };
@@ -146,10 +170,10 @@ class Builder {
     for (const index in files) {
       const file = files[index];
 
-      const filePath = join(config.source, file);
+      const filePath = resolve(config.source, file);
       const buildPath = config.build_files[index];
 
-      this.CopyFile(filePath, join(config.build, buildPath));
+      this.CopyFile(filePath, resolve(config.build, buildPath));
     }
   };
 
@@ -160,9 +184,9 @@ class Builder {
 
         for (const d of dir) {
           fullDir.push(d);
-          this.CreateDir(join(this._build, ...fullDir));
+          this.CreateDir(resolve(this._build, ...fullDir));
         }
-      } else this.CreateDir(join(this._build, dir));
+      } else this.CreateDir(resolve(this._build, dir));
     }
   };
 
@@ -217,7 +241,7 @@ class Builder {
       catalog.split("\\").forEach(path => {
         fullPath.push(path);
         
-        const parsed = parse(join(...fullPath));
+        const parsed = parse(resolve(...fullPath));
         console.log(
           "cleaning " +
           "\u001B[33;1m" +
@@ -228,31 +252,20 @@ class Builder {
         );
 
         try {
-          if (fs.existsSync(join(this._build, ...fullPath))) {
-            fs.unlinkSync(join(this._build, ...fullPath));
+          if (fs.existsSync(resolve(this._build, ...fullPath))) {
+            fs.unlinkSync(resolve(this._build, ...fullPath));
           }
         } catch {};
       })
     });
-  }
+  };
 
   private readonly CreateDirs = (path: string) => {
-    const { dir } = parse(path);
+    const dir = new DirManager(this.ReadDirsAndFiles(ROOT));
 
-    if (!dir) return;
-
-    try {
-      fs.mkdirSync(dir);
-    } catch (error) {
-        console.log(
-          "creating " +
-          "\u001B[33;1m" +
-          dir +
-          "\u001B[0m" +
-          "..."
-        );
-      this.CreateDirs(dir);
-    };
+    dir.infinityParse(path, []).forEach(d => {
+      if (!existsSync(resolve(this._build, d))) mkdirSync(resolve(this._build, d));
+    });
   };
 
   private readonly CopyCatalog = (catalog: string) => {
@@ -264,15 +277,18 @@ class Builder {
       "..."
     );
 
-    this.CreateDirs(catalog);
-    fs.copyFileSync(join(catalog), join(this._build, catalog))
+    
+    fs.copyFileSync(resolve(catalog), resolve(this._build, catalog));
   };
 
   private readonly CopyCatalogs = () => {
     const catalogs = this.ValidateCatalogs();
 
     this.CleanCatalogs(catalogs);
-    catalogs.forEach(catalog => this.CopyCatalog(catalog));
+    catalogs.forEach(catalog => {
+      this.CreateDirs(catalog);
+      this.CopyCatalog(catalog);
+    });
   };
 }
 

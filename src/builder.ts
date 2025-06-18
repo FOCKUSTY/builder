@@ -236,29 +236,36 @@ class Builder {
     });
   }
 
-  private readonly CopyCatalog = (catalog: string) => {
-    const fullPath: string[] = [];
-    
-    catalog.split("\\").forEach(path => {
-      fullPath.push(path);
-      const parsed = parse(join(...fullPath));
-      console.log(
-        "copying " +
-        "\u001B[33;1m" +
-        parsed.name +
-        parsed.ext +
-        "\u001B[0m" +
-        "..."
-      );
+  private readonly CreateDirs = (path: string) => {
+    const { dir } = parse(path);
 
-      try {
-        fs.readdirSync(join(...fullPath));
-      
-        this.CreateDir(join(this._build, ...fullPath))
-      } catch {
-        fs.copyFileSync(join(...fullPath), join(this._build, ...fullPath))
-      };
-    });
+    if (!dir) return;
+
+    try {
+      fs.mkdirSync(dir);
+    } catch (error) {
+        console.log(
+          "creating " +
+          "\u001B[33;1m" +
+          dir +
+          "\u001B[0m" +
+          "..."
+        );
+      this.CreateDirs(dir);
+    };
+  };
+
+  private readonly CopyCatalog = (catalog: string) => {
+    console.log(
+      "resolving: " +
+      "\u001B[33;1m" +
+      catalog +
+      "\u001B[0m" +
+      "..."
+    );
+
+    this.CreateDirs(catalog);
+    fs.copyFileSync(join(catalog), join(this._build, catalog))
   };
 
   private readonly CopyCatalogs = () => {

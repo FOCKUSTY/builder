@@ -18,62 +18,89 @@ npm install fock-builder@latest
 
 ```js
 {
-    "dirs": [],
-    "fsource": [],
-    "fbuild": [],
-    
-    "source": "",
-    "build": ""
+  "catalogs": [],
+
+  "ignore_catalogs": [
+    "./**/node_modules/**",
+    "./**/.git",
+    "./**/.obsidian",
+    "./**/.github",
+  ],
+
+  "ignore_files": [
+    "package-lock.json"
+  ],
+
+  "dirs": [],
+  "source_files": [],
+  "build_files": [],
+  
+  "source": "./",
+  "build": "./build/"
 }
 
 /**
+ * catalogs - каталог, который нужно скопировать полностью (поддерживает ** и *)
+ * ignore_catalogs - каталоги, которые нужно игнорировать при копировании (поддерживает ** и *)
+ * ignore_files - файлы, который нужно игнорировать при копировании (поддерживает *)
+ * 
+ * @deprecated
  * dirs - ваши папки
- * fsource - название файлов, которые нужно скопировать
- * fbuild - название файлов, которые нужно создать
+ * @deprecated
+ * source_files - название файлов, которые нужно скопировать
+ * @deprecated
+ * build_files - название файлов, которые нужно создать
  * 
  * sorce - путь к вашей рут-папке
  * build - путь к вашей билд-папке
  */
 ```
 
-### типы
-1. dirs принимает `string` или `string[]`
-- Примеры: `["assets", ["info", "md"], ["info", "txt"]]`
+### Типы
+1. catalogs принимает `string[]`
+- Пример: `[ "./**/*.ts" ]`
 
-2. fsource - принимает `string` или `string[]`
-- Примеры `["hello.ts", "printer.js", "ico.png", ["assets", "favicon.ico"]]`
-3. fbuild - принимает `string` или `string[]`
-- Примеры `["hello.ts", "printer.js", "ico.png", ["assets", "favicon.ico"]]`
+2. ignore_catalogs принимает `string[]`
+- Пример: `[ "./**/my-secret-dir/**" ]`
 
-4. sorce - принимает `string`
-- Примеры: `./`
-5. build - принимает `string`
-- Примеры: `./dist`
+3. ignore_files принимает `string[]`
+- Пример `[ ".env" ]`
+
+4. `@deprecated` dirs принимает `string[]` или `string[][]`
+- Пример: `["assets", ["info", "md"], ["info", "txt"]]`
+
+5. `@deprecated` source_files - принимает `string[]` или `string[][]`
+- Пример `["hello.ts", "printer.js", "ico.png", ["assets", "favicon.ico"]]`
+6. `@deprecated` build_files - принимает `string[]` или `string[][]`
+- Пример `["hello.ts", "printer.js", "ico.png", ["assets", "favicon.ico"]]`
+
+7. sorce - принимает `string`
+- Пример: `./`
+8. build - принимает `string`
+- Пример: `./dist`
 
 
 - Пример
 ```json
 {
-    "dirs": [
-        "assets"
-    ],
+  "catalogs": [],
 
-    "fsource": [
-        "README.md",
-        "LICENSE",
-        ".gitignore",
-        ".prettierrc",
-        "package.json"
-    ],
-    "fbuild": [
-        "README.md",
-        "LICENSE",
-        ".gitignore",
-        ".prettierrc",
-        "package.json"
-    ],
-    
-    "source": "./",
-    "build": "../dist/"
+  "ignore_catalogs": [
+    "./**/node_modules/**",
+    "./**/.git",
+    "./**/.obsidian",
+    "./**/.github",
+  ],
+
+  "ignore_files": [
+    "package-lock.json"
+  ],
+
+  "dirs": [],
+  "source_files": [],
+  "build_files": [],
+  
+  "source": "./",
+  "build": "./dist/"
 }
 ```

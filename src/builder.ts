@@ -101,10 +101,7 @@ class Builder {
       console.log("cleaning dir...");
 
       const files = fs.readdirSync(dirPath);
-
-      for (const index in files) {
-        const file = files[index];
-
+      for (const file of files) {
         if (!config.source_files.includes(file as any)) continue;
 
         fs.unlinkSync(join(dirPath, file));
@@ -257,9 +254,7 @@ class Builder {
       try {
         fs.readdirSync(join(...fullPath));
       
-        if (!fs.existsSync(join(this._build, ...fullPath))) {
-          fs.mkdirSync(join(this._build, ...fullPath));
-        }
+        this.CreateDir(join(this._build, ...fullPath))
       } catch {
         fs.copyFileSync(join(...fullPath), join(this._build, ...fullPath))
       };

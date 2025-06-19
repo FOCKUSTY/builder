@@ -33,3 +33,22 @@ export type Config<T> = Record<SettingKeys, T>;
 
 export type InputConfig = Config<InputSettings>;
 export type StandartConfig = Config<StandartSettings>;
+
+export type Dirs = {
+  [key: string]: {
+    name: string,
+    path: string,
+  } & ({
+    isDir: true,
+    dirs: Dirs
+  } | {
+    isDir: false,
+    dirs: null
+  })
+};
+
+export type RegExpFilterData = {
+  ignore: RegExp[],
+  includes: RegExp[],
+  ignore_files: RegExp[]
+};

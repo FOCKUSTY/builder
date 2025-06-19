@@ -1,101 +1,31 @@
 import Configurator from "./configurator";
 
-import { join, parse, normalize } from "path";
-import fs, { existsSync, mkdirSync } from "fs";
+import { parse } from "path";
+import {
+  existsSync,
+  mkdirSync,
+  copyFileSync,
+  unlinkSync,
+  readdirSync
+} from "fs";
+
+import {
+  createRegularExpression,
+  regularExpressionfilter,
+  resolve,
+  ROOT,
+  toRoot,
+  log
+} from "./constants";
+
+import { DirManager } from "./dir-manager";
+
+import type {
+  Dirs,
+  RegExpFilterData
+} from "./config.types";
 
 const { config } = new Configurator();
-
-const CATALOG_REGULAR_EXPRESSION = ["**", "?([\\w]+)?"] as const;
-const FILE_REGULAR_EXPRESSION = ["*", "?(.+)"] as const;
-const SPECIAL_SYMBOLS = [".", "/"] as const;
-
-const createRegularExpression = (catalog: string, flags: string = "gi") => {
-  let output = `${catalog}`;
-
-  for (const specialSymbol of SPECIAL_SYMBOLS) {
-    output = output.replaceAll(specialSymbol, "\\" + specialSymbol);
-  };
-
-  return new RegExp(output
-    .replaceAll(...CATALOG_REGULAR_EXPRESSION)
-    .replaceAll(...FILE_REGULAR_EXPRESSION),
-    flags
-  );
-};
-
-const resolve = (...paths: string[]) => normalize(join(...paths));
-
-type Dirs = {
-  [key: string]: {
-    name: string,
-    path: string,
-  } & ({
-    isDir: true,
-    dirs: Dirs
-  } | {
-    isDir: false,
-    dirs: null
-  })
-};
-
-type RegExpFilterData = {
-  ignore: RegExp[],
-  includes: RegExp[],
-  ignore_files: RegExp[]
-};
-
-const ROOT = "./" as const;
-
-class DirManager {
-  public constructor(
-    public readonly dir: Dirs,
-  ) {};
-
-  public static resolve(path: string) {
-    return ROOT + `${path}`.replaceAll("\\", "/");
-  }
-
-  public infinityParse(path: string, paths: string[] = []): string[] {
-    const { dir } = parse(path);
-
-    if (!dir) {
-      return paths
-    };
-    
-    paths.push(...this.infinityParse(dir));
-    paths.push(dir);
-    
-    return paths;
-  };
-
-  public mapDirWithPath(dir: Dirs = this.dir) {
-    const paths = (Object.values(dir).map(d =>
-      d.isDir
-        ? this.mapDirWithPath(d.dirs)
-        : { path: d.path, dirs: parse(d.path).dir }
-    ) as (string | string[])[]);
-
-    return paths.flatMap((v) => v);
-  };
-
-  public mapDir(dir: Dirs = this.dir) {
-    const paths = (Object.values(dir).map(d =>
-      d.isDir
-        ? this.mapDir(d.dirs)
-        : d.path
-    ) as (string | string[])[]);
-
-    return paths.flatMap((v) => v);
-  };
-
-  public regularExpressionfilter(data: string[], regExps: RegExpFilterData["includes"]) {
-    return data.filter(path => {
-      if (regExps.filter(r => DirManager.resolve(path).match(r) !== null).length === 0) return false;
-      
-      return true;
-    });
-  };
-}
 
 class Builder {
   private readonly _build = resolve(ROOT, config.build);
@@ -117,99 +47,99 @@ class Builder {
     this.CopyFiles(config.source_files);
   }
 
-  private readonly CreateDir = (dirPath: string = this._build, clean: boolean = true) => {
-    if (!fs.existsSync(dirPath)) {
-      console.log("creating dir...");
+  private readonly CreateDir = (dirPath: string = this._build) => {
+    if (!existsSync(dirPath)) {
+      log("creating", "dir");
 
-      fs.mkdirSync(dirPath);
+      mkdirSync(dirPath);
     } else {
-      if (!clean) return;
+      log("cleaning", "dir");
 
-      console.log("cleaning dir...");
-
-      const files = fs.readdirSync(dirPath);
+      const files = readdirSync(dirPath);
       for (const file of files) {
-        if (!config.source_files.includes(file as any)) continue;
+        if (!config.source_files.includes(file)) continue;
 
-        fs.unlinkSync(resolve(dirPath, file));
-      }
-    }
+        unlinkSync(resolve(dirPath, file));
+      };
+    };
   };
 
   private readonly CopyFile = (filePath: string, buildPath: string) => {
     const parsed = parse(filePath);
     const builded = parse(buildPath);
 
-    if (!fs.existsSync(filePath)) return;
+    if (!existsSync(filePath)) return;
+    if (existsSync(buildPath)) {
+      log("deleting", builded.name + builded.ext);
+      unlinkSync(buildPath);
+    };
+    
+    log("copying", parsed.name + parsed.ext);
 
-    if (fs.existsSync(buildPath)) {
-      console.log(
-        "deleting " +
-          "\u001B[33;1m" +
-          builded.name +
-          builded.ext +
-          "\u001B[0m" +
-          "..."
-      );
-      fs.unlinkSync(buildPath);
-    }
+    try {
+      readdirSync(filePath);
+      mkdirSync(buildPath);
+    } catch {
+      copyFileSync(filePath, buildPath);
+    };
 
-    console.log(
-      "copying " +
-        "\u001B[33;1m" +
-        parsed.name +
-        parsed.ext +
-        "\u001B[0m" +
-        "..."
-    );
-
-    fs.copyFileSync(filePath, buildPath);
     console.log("copyied!");
   };
 
   private readonly CopyFiles = (files: string[]) => {
-    this.CreateDir();
-
-    for (const index in files) {
-      const file = files[index];
-
-      const filePath = resolve(config.source, file);
-      const buildPath = config.build_files[index];
-
-      this.CopyFile(filePath, resolve(config.build, buildPath));
-    }
+    files.forEach((file, index) =>
+      this.CopyFile(
+        resolve(config.source, file),
+        resolve(config.build, config.build_files[index])
+    ));
   };
 
   private readonly CopyDirs = (dirs: string[]) => {
-    for (const dir of dirs) {
-      this.CreateDirs(resolve(this._build, ...(Array.isArray(dir) ? dir : [dir])));
-    };
+    dirs.forEach(dir => 
+      this.CreateDirs(resolve(this._build, ...(Array.isArray(dir) ? dir : [dir])))
+    );
+  };
+
+  private readonly IsPathValid = (path: string) => {
+    const rootedPath = toRoot(path);
+    const { name, ext } = parse(path);
+
+    const catalogValided = this._reg_exp_filter_data.ignore.every(r => {
+      const matched = rootedPath.match(r);
+
+      return !(Array.isArray(matched)
+        ? matched[0] === rootedPath
+        : false);
+    });
+    
+    const fileValided = this._reg_exp_filter_data.ignore_files.every(r => {
+      const matched = name+ext.match(r);
+
+      return !(Array.isArray(matched)
+        ? matched[0] === name+ext
+        : false);
+    });
+
+    return (catalogValided && fileValided);
   };
 
   private readonly ReadDirsAndFiles = (dir: string, dirs: Dirs = {}) => {
 		const resolvedPath = resolve(dir);
-		const folder = fs.readdirSync(resolvedPath);
+		const folder = readdirSync(resolvedPath);
 
 		for (const file of folder) {
       const path = resolve(resolvedPath, file);
-      const pathToFilter = DirManager.resolve(path);
-      const fileName = parse(path).name + parse(path).ext;
 
-      const validated =
-        this._reg_exp_filter_data.ignore.every(r => !(pathToFilter.match(r) && pathToFilter.match(r)![0] === pathToFilter))
-        && this._reg_exp_filter_data.ignore_files.every(r => !(fileName.match(r) && fileName.match(r)![0] === fileName));
-      
-      if (!validated) continue;
+      if (!this.IsPathValid(path)) continue;
 
       try {
-				const folderPath = path;
-				fs.readdirSync(folderPath);
+				readdirSync(path);
 
-				dirs[folderPath] = {
+				dirs[path] = {
           name: file,
-          path: folderPath,
+          path: path,
           isDir: true,
-          dirs: this.ReadDirsAndFiles(folderPath)
+          dirs: this.ReadDirsAndFiles(path)
         };
 			} catch (err) {
 				dirs[file] = {
@@ -218,85 +148,34 @@ class Builder {
           isDir: false,
           dirs: null
         };
-			}
-		}
+			};
+		};
 
 		return dirs;
   };
 
-  private readonly ValidateCatalogs = () => {
+  private readonly FilterCatalogs = () => {
     const dir = new DirManager(this.ReadDirsAndFiles(ROOT));
 
-    return dir.regularExpressionfilter(dir.mapDir(), this._reg_exp_filter_data.includes);
-  }
-
-  private readonly CleanCatalogs = (catalogs: string[]) => {
-    catalogs.forEach(catalog => {
-      const fullPath: string[] = [];
-      
-      catalog.split("\\").forEach(path => {
-        fullPath.push(path);
-        
-        const parsed = parse(resolve(...fullPath));
-        console.log(
-          "cleaning " +
-          "\u001B[33;1m" +
-          parsed.name +
-          parsed.ext +
-          "\u001B[0m" +
-          "..."
-        );
-
-        try {
-          if (fs.existsSync(resolve(this._build, ...fullPath))) {
-            fs.unlinkSync(resolve(this._build, ...fullPath));
-          }
-        } catch {};
-      })
-    });
+    return regularExpressionfilter(dir.mapDir(), this._reg_exp_filter_data.includes);
   };
 
   private readonly CreateDirs = (path: string) => {
     const dir = new DirManager(this.ReadDirsAndFiles(ROOT));
 
-    this.CreateDir(this._build, false);
     dir.infinityParse(path, []).forEach(d => {
-      try {
-        console.log(
-          "checking " +
-          "\u001B[33;1m" +
-          d +
-          "\u001B[0m" +
-          "..."
-        );
-        if (!existsSync(resolve(this._build, d))) {
-          mkdirSync(resolve(this._build, d));
-        };
-      } catch (error) {
-        console.log(error);
+      if (!existsSync(resolve(this._build, d))) {
+        mkdirSync(resolve(this._build, d));
       };
     });
   };
 
-  private readonly CopyCatalog = (catalog: string) => {
-    console.log(
-      "resolving: " +
-      "\u001B[33;1m" +
-      catalog +
-      "\u001B[0m" +
-      "..."
-    );
-    
-    fs.copyFileSync(resolve(catalog), resolve(this._build, catalog));
-  };
-
   private readonly CopyCatalogs = () => {
-    const catalogs = this.ValidateCatalogs();
+    const catalogs = this.FilterCatalogs();
 
-    this.CleanCatalogs(catalogs);
     catalogs.forEach(catalog => {
       this.CreateDirs(catalog);
-      this.CopyCatalog(catalog);
+      this.CopyFile(resolve(catalog), resolve(this._build, catalog));
     });
   };
 }

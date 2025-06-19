@@ -110,10 +110,9 @@ class Builder {
   }
 
   public execute() {
-
+    this.CopyCatalogs();
     this.CopyDirs(config.dirs);
     this.CopyFiles(config.source_files);
-    this.CopyCatalogs();
   }
 
   private readonly CreateDir = (dirPath: string = this._build) => {

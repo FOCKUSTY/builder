@@ -256,7 +256,13 @@ class Builder {
     const dir = new DirManager(this.ReadDirsAndFiles(ROOT));
 
     dir.infinityParse(path, []).forEach(d => {
-      if (!existsSync(resolve(this._build, d))) mkdirSync(resolve(this._build, d));
+      try {
+        if (!existsSync(resolve(this._build, d))) {
+          mkdirSync(resolve(this._build, d));
+        };
+      } catch (error) {
+        console.log(error);
+      };
     });
   };
 

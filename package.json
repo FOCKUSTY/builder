@@ -1,6 +1,6 @@
 {
   "name": "fock-builder",
-  "version": "2.0.0-beta.1e",
+  "version": "2.0.0-beta.1f",
   "description": "simple builder for you library or project",
   "main": "index.ts",
   "scripts": {

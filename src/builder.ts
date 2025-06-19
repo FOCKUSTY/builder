@@ -178,15 +178,8 @@ class Builder {
 
   private readonly CopyDirs = (dirs: string[]) => {
     for (const dir of dirs) {
-      if (Array.isArray(dir)) {
-        let fullDir: string[] = [];
-
-        for (const d of dir) {
-          fullDir.push(d);
-          this.CreateDir(resolve(this._build, ...fullDir));
-        }
-      } else this.CreateDir(resolve(this._build, dir));
-    }
+      this.CreateDirs(resolve(this._build, ...(Array.isArray(dir) ? dir : [dir])));
+    };
   };
 
   private readonly ReadDirsAndFiles = (dir: string, dirs: Dirs = {}) => {
@@ -275,7 +268,6 @@ class Builder {
       "\u001B[0m" +
       "..."
     );
-
     
     fs.copyFileSync(resolve(catalog), resolve(this._build, catalog));
   };

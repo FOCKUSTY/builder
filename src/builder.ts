@@ -110,6 +110,8 @@ class Builder {
   }
 
   public execute() {
+    this.CreateDir();
+
     this.CopyCatalogs();
     this.CopyDirs(config.dirs);
     this.CopyFiles(config.source_files);
@@ -257,6 +259,13 @@ class Builder {
 
     dir.infinityParse(path, []).forEach(d => {
       try {
+        console.log(
+          "checking " +
+          "\u001B[33;1m" +
+          dir +
+          "\u001B[0m" +
+          "..."
+        );
         if (!existsSync(resolve(this._build, d))) {
           mkdirSync(resolve(this._build, d));
         };

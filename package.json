@@ -1,6 +1,6 @@
 {
   "name": "fock-builder",
-  "version": "2.0.0-beta.1c",
+  "version": "2.0.0-beta.1d",
   "description": "simple builder for you library or project",
   "main": "index.ts",
   "scripts": {
@@ -16,17 +16,14 @@
     "copier"
   ],
   "files": [
-    "index.js",
-    "configurator.js",
-    "config.types.js",
-    "builder.js",
-    "index.d.ts",
-    "configurator.d.ts",
-    "config.types.d.ts",
-    "builder.d.ts",
-    "bin/index.js",
-    "bin/commands/config.js",
-    "bin/commands/start.js"
+    "./**/*.js",
+    "./**/*.js.map",
+    "./**/*.d.ts",
+    "./**/*.d.ts.map",
+    "./**/*.json",
+    "LICENSE",
+    "README.md",
+    "./assets/**/*"
   ],
   "devDependencies": {
     "@types/node": "^22.7.4",

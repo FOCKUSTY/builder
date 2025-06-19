@@ -19,7 +19,7 @@ export type OldConfigType = {
   catalogs: string[];
   ignore_catalogs: string[];
   ignore_files: string[];
-  
+
   dirs: string[];
 
   build_files: string[];
@@ -36,19 +36,22 @@ export type StandartConfig = Config<StandartSettings>;
 
 export type Dirs = {
   [key: string]: {
-    name: string,
-    path: string,
-  } & ({
-    isDir: true,
-    dirs: Dirs
-  } | {
-    isDir: false,
-    dirs: null
-  })
+    name: string;
+    path: string;
+  } & (
+    | {
+        isDir: true;
+        dirs: Dirs;
+      }
+    | {
+        isDir: false;
+        dirs: null;
+      }
+  );
 };
 
 export type RegExpFilterData = {
-  ignore: RegExp[],
-  includes: RegExp[],
-  ignore_files: RegExp[]
+  ignore: RegExp[];
+  includes: RegExp[];
+  ignore_files: RegExp[];
 };

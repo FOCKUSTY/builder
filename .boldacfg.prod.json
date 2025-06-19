@@ -1,7 +1,5 @@
 {
-  "catalogs": [
-    "./**/*"
-  ],
+  "catalogs": ["./**/*"],
 
   "ignore_catalogs": [
     "./**/node_modules/**",
@@ -11,14 +9,12 @@
     "./src/**/*"
   ],
 
-  "ignore_files": [
-    "package-lock.json"
-  ],
+  "ignore_files": ["package-lock.json"],
 
   "dirs": [],
   "source_files": [],
   "build_files": [],
-  
+
   "source": "./",
   "build": "./dist/"
 }

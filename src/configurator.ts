@@ -14,10 +14,10 @@ const CONFIG_NAMES = [
   ".boldacfg.dev.json",
   ".boldacfg.prod.json",
   ".boldacfg.json",
-  
+
   ".boldacfg.dev",
   ".boldacfg.prod",
-  ".boldacfg",
+  ".boldacfg"
 ];
 export const EXCLUDE = [
   "./**/node_modules",
@@ -84,7 +84,7 @@ class Validator {
       return this.PrintValueError(`Value at key: ${key} not that type`);
 
     return value;
-  };
+  }
 
   private readonly PathValidator = (path: string): boolean => {
     if (typeof path !== "string") return false;
@@ -93,14 +93,28 @@ class Validator {
     return true;
   };
 
-  private readonly CatalogValidator = (catalogs: string[] | string[][]): boolean => {
+  private readonly CatalogValidator = (
+    catalogs: string[] | string[][]
+  ): boolean => {
     return catalogs.every((catalog) => {
-      if (Array.isArray(catalog)) return this.PrintValueError('Your value in key "catalogs" is not a string', false);
-      if (!this.PathValidator(catalog)) return this.PrintValueError('Your value in key "catalogs" is failed path validation', false);
+      if (Array.isArray(catalog))
+        return this.PrintValueError(
+          'Your value in key "catalogs" is not a string',
+          false
+        );
+      if (!this.PathValidator(catalog))
+        return this.PrintValueError(
+          'Your value in key "catalogs" is failed path validation',
+          false
+        );
 
       const matched = catalog.match(CATALOG_REGULAR_EXPRESSION);
-      
-      if (!matched) return this.PrintValueError('Your value in key "catalogs" is failed path validation', false);
+
+      if (!matched)
+        return this.PrintValueError(
+          'Your value in key "catalogs" is failed path validation',
+          false
+        );
 
       return true;
     });
@@ -144,21 +158,25 @@ class Validator {
           `At your key: "${key}" a ${vPath} not that type`
         );
 
-      const isCatalog = (key === "catalogs");
+      const isCatalog = key === "catalogs";
       if (isCatalog) {
         return this.CatalogValidator(value)
-          ? value as string[]
-          : this.PrintValueError(`Your value at key "${key} is not failed validation"`);
-      };
+          ? (value as string[])
+          : this.PrintValueError(
+              `Your value at key "${key} is not failed validation"`
+            );
+      }
 
-      const isIgnoreCatalogs = (key === "ignore_catalogs");
+      const isIgnoreCatalogs = key === "ignore_catalogs";
       if (isIgnoreCatalogs) {
-        return value.every(v => typeof v === "string")
+        return value.every((v) => typeof v === "string")
           ? value
           : this.PrintValueError(`Your value at key "${key} is not a string"`);
       }
 
-      const isNotFile = (!(parsed.dir === "") || !(parsed.root === "")) && !Array.isArray(array)
+      const isNotFile =
+        (!(parsed.dir === "") || !(parsed.root === "")) &&
+        !Array.isArray(array);
       if (isNotFile) {
         return this.PrintValueError(
           `At your key: "${key}" a ${vPath} not file`
@@ -201,10 +219,9 @@ class Configurator {
 
     for (const filteredFile of filtered) {
       const file = path.join(this._dir, filteredFile);
-      
+
       if (CONFIG_NAMES.includes(filteredFile)) {
-        if 
-        (!fs.existsSync(file)) continue;
+        if (!fs.existsSync(file)) continue;
         else return file;
       } else if (CONFIG_REGULAR_EXPRESSION.test(filteredFile)) {
         return path.join(this._dir, filteredFile);
@@ -271,19 +288,20 @@ class Configurator {
       this.Create();
     }
 
-    const isEmpty = fs.existsSync(this._path) &&
+    const isEmpty =
+      fs.existsSync(this._path) &&
       Object.keys(JSON.parse(fs.readFileSync(this._path, "utf-8") || "{}"))
         .length === 0;
     if (isEmpty) {
       console.log(
         "\u001B[33;1m" +
-        "Your config is empty, returning to default" +
-        "\u001B[0m"
+          "Your config is empty, returning to default" +
+          "\u001B[0m"
       );
 
       fs.unlinkSync(this._path);
       this.Create();
-    };
+    }
 
     try {
       let file: any;

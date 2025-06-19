@@ -34,7 +34,7 @@ npm install fock-builder@latest
   "dirs": [],
   "source_files": [],
   "build_files": [],
-  
+
   "source": "./",
   "build": "./build/"
 }
@@ -43,20 +43,21 @@ npm install fock-builder@latest
  * catalogs - каталог, который нужно скопировать полностью (поддерживает ** и *)
  * ignore_catalogs - каталоги, которые нужно игнорировать при копировании (поддерживает ** и *)
  * ignore_files - файлы, который нужно игнорировать при копировании (поддерживает *)
- * 
+ *
  * @deprecated
  * dirs - ваши папки
  * @deprecated
  * source_files - название файлов, которые нужно скопировать
  * @deprecated
  * build_files - название файлов, которые нужно создать
- * 
+ *
  * sorce - путь к вашей рут-папке
  * build - путь к вашей билд-папке
  */
 ```
 
 ### Типы
+
 1. catalogs принимает `string[]`
 - Пример: `[ "./**/*.ts" ]`
 
@@ -71,16 +72,16 @@ npm install fock-builder@latest
 
 5. `@deprecated` source_files - принимает `string[]` или `string[][]`
 - Пример `["hello.ts", "printer.js", "ico.png", ["assets", "favicon.ico"]]`
+
 6. `@deprecated` build_files - принимает `string[]` или `string[][]`
 - Пример `["hello.ts", "printer.js", "ico.png", ["assets", "favicon.ico"]]`
 
 7. sorce - принимает `string`
 - Пример: `./`
+
 8. build - принимает `string`
 - Пример: `./dist`
 
-
-- Пример
 ```json
 {
   "catalogs": [],
@@ -89,17 +90,15 @@ npm install fock-builder@latest
     "./**/node_modules/**",
     "./**/.git",
     "./**/.obsidian",
-    "./**/.github",
+    "./**/.github"
   ],
 
-  "ignore_files": [
-    "package-lock.json"
-  ],
+  "ignore_files": ["package-lock.json"],
 
   "dirs": [],
   "source_files": [],
   "build_files": [],
-  
+
   "source": "./",
   "build": "./dist/"
 }

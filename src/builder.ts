@@ -117,12 +117,14 @@ class Builder {
     this.CopyFiles(config.source_files);
   }
 
-  private readonly CreateDir = (dirPath: string = this._build) => {
+  private readonly CreateDir = (dirPath: string = this._build, clean: boolean = true) => {
     if (!fs.existsSync(dirPath)) {
       console.log("creating dir...");
 
       fs.mkdirSync(dirPath);
     } else {
+      if (!clean) return;
+
       console.log("cleaning dir...");
 
       const files = fs.readdirSync(dirPath);
@@ -257,12 +259,13 @@ class Builder {
   private readonly CreateDirs = (path: string) => {
     const dir = new DirManager(this.ReadDirsAndFiles(ROOT));
 
+    this.CreateDir(this._build, false);
     dir.infinityParse(path, []).forEach(d => {
       try {
         console.log(
           "checking " +
           "\u001B[33;1m" +
-          dir +
+          d +
           "\u001B[0m" +
           "..."
         );
